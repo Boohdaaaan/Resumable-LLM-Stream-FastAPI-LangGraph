@@ -1,0 +1,19 @@
+[project]
+name = "streaming-template"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "asyncpg>=0.30.0",
+    "fastapi>=0.116.1",
+    "greenlet>=3.2.4",
+    "langchain-google-genai>=2.1.11",
+    "langchain-tavily>=0.2.11",
+    "langgraph>=0.6.7",
+    "langgraph-checkpoint-postgres>=2.0.23",
+    "langmem>=0.0.29",
+    "python-dotenv>=1.1.1",
+    "redis>=6.4.0",
+    "uvicorn>=0.35.0",
+]
