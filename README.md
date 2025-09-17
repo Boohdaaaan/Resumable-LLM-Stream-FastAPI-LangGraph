@@ -2,6 +2,8 @@
 
 High-level template for resumable LLM token streaming using FastAPI, Redis Streams, and LangGraph with a Postgres checkpointer. Includes a minimal frontend and clean SSE streaming endpoints.
 
+<img width="1512" height="838" alt="image" src="https://github.com/user-attachments/assets/fd259a7c-ce9e-4082-a20d-2b13b77dc903" />
+
 ### Features
 - **Resumable streaming**: Tokens are streamed into Redis; clients consume via SSE and can resume after network hiccups.
 - **LangGraph Persistence**: Conversation state persisted via LangGraph Postgres checkpointer.
@@ -91,3 +93,4 @@ uvicorn app:app --reload --host 0.0.0.0 --port 8000
   });
 </script>
 ```
+
