@@ -147,11 +147,14 @@ async function sendMessage(threadId, message) {
   if (!res.ok) throw new Error("Failed to send message");
 }
 
-function openStream(threadId, onChunk, onEnd, onToolCall) {
+function openStream(threadId, onChunk, onEnd, onToolCall, options) {
+  const disableOnOpen = options?.disableOnOpen === true;
   closeStream();
   const url = `${API_BASE}/chat/stream?thread_id=${encodeURIComponent(threadId)}`;
   const es = new EventSource(url);
-  setSendDisabled(true);
+  if (disableOnOpen) {
+    setSendDisabled(true);
+  }
   // Default "message" events are token chunks now (plain text)
   es.onmessage = (ev) => {
     if (typeof ev.data === "string" && ev.data.length) {
@@ -169,7 +172,6 @@ function openStream(threadId, onChunk, onEnd, onToolCall) {
     if ((ev.data || "").trim() === "end") {
       onEnd?.();
       closeStream();
-      setSendDisabled(false);
     }
   });
   // Tool call notifications
@@ -178,10 +180,13 @@ function openStream(threadId, onChunk, onEnd, onToolCall) {
       onToolCall(ev.data || "");
     }
   });
-  // es.onerror = () => {
-  //   // Close to prevent browser auto-reconnect spam when stream is empty/completed
-  //   closeStream();
-  // };
+  es.onerror = () => {
+    // Close to prevent browser auto-reconnect spam when stream is empty/completed
+    closeStream();
+    if (disableOnOpen) {
+      setSendDisabled(false);
+    }
+  };
   source = es;
 }
 
@@ -256,7 +261,8 @@ async function selectThread(threadId, chatName) {
         toolLoader.appendChild(toolLoaderTextEl);
       }
       toolLoaderTextEl.textContent = String(text || "").trim();
-    }
+    },
+    { disableOnOpen: false }
   );
 }
 
@@ -339,7 +345,8 @@ els.composer.addEventListener("submit", async (e) => {
         toolLoader.appendChild(toolLoaderTextEl);
       }
       toolLoaderTextEl.textContent = String(text || "").trim();
-    }
+    },
+    { disableOnOpen: true }
   );
 });
 

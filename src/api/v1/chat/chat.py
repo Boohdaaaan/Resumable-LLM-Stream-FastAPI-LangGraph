@@ -131,38 +131,30 @@ async def stream_tokens(thread_id: UUID):
     if not status or status == "completed":
         return Response(status_code=204)
 
-    group_name = f"group-{uuid4()}"
-
     message_ended_id = await r.get(f"{STREAM_ID}:message_ended")
-    initial_group_id = message_ended_id or "0"
 
-    await r.xgroup_create(STREAM_ID, group_name, id=initial_group_id, mkstream=True)
-
-    async def get_chunks() -> AsyncGenerator[str, None]:
+    async def get_chunks(last_id: str) -> AsyncGenerator[str, None]:
         while True:
-            messages = await r.xreadgroup(
-                groupname=group_name,
-                consumername="0",
-                streams={STREAM_ID: ">"},
-                count=None,
-            )
+            messages = await r.xread(streams={STREAM_ID: last_id}, block=3000)
 
-            if messages:
-                for _, msgs in messages:
-                    for msg_id, data in msgs:
-                        yield _format_sse_event(
-                            message_id=msg_id,
-                            data=data["data"],
-                            event=data["event"],
-                        )
+            if not messages:
+                continue
 
-                        await r.xack(STREAM_ID, group_name, msg_id)
+            for _, msgs in messages:
+                for msg_id, data in msgs:
+                    yield _format_sse_event(
+                        message_id=msg_id,
+                        data=data["data"],
+                        event=data["event"],
+                    )
 
-                        if data["event"] == "system" and data["data"] == "end":
-                            return
+                    last_id = msg_id
+
+                    if data["event"] == "system" and data["data"] == "end":
+                        return
 
     return StreamingResponse(
-        get_chunks(),
+        get_chunks(last_id=message_ended_id or "0"),
         media_type="text/event-stream",
         headers={
             "Content-Type": "text/event-stream",
