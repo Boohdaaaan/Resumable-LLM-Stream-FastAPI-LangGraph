@@ -104,6 +104,20 @@ body {
   overflow-y: auto;
 }
 
+.error-banner {
+  margin: 12px 0;
+  padding: 12px 14px;
+  background: rgba(255, 92, 92, 0.12);
+  border: 1px solid rgba(255, 92, 92, 0.35);
+  color: var(--text);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  display: inline-block;
+  max-width: 80%;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
 .message { display: grid; grid-template-columns: 36px 1fr; gap: 10px; margin-bottom: 14px; align-items: start; }
 .message .avatar { width: 36px; height: 36px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--border); }
 .message.user .avatar { background: linear-gradient(135deg, var(--accent), var(--accent-2)); }

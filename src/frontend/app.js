@@ -98,6 +98,18 @@ function appendMessage({ type, content }) {
   return node.querySelector(".bubble");
 }
 
+function showErrorBanner() {
+  try {
+    els.messages.querySelectorAll(".error-banner").forEach((n) => n.remove());
+    const node = document.createElement("div");
+    node.className = "error-banner";
+    node.setAttribute("role", "alert");
+    node.textContent = String("Error generating response");
+    els.messages.appendChild(node);
+    els.messages.scrollTop = els.messages.scrollHeight;
+  } catch {}
+}
+
 function clearMessages() {
   els.messages.innerHTML = "";
 }
@@ -169,9 +181,17 @@ function openStream(threadId, onChunk, onEnd, onToolCall, options) {
   });
   // Server emits custom system events for lifecycle notifications
   es.addEventListener("system", (ev) => {
-    if ((ev.data || "").trim() === "end") {
+    const payload = (ev.data || "").trim();
+    if (payload === "end") {
       onEnd?.();
       closeStream();
+    } else if (payload === "error") {
+      // Render a visible error banner in the chat
+      showErrorBanner();
+      // Let user send again if we disabled the send button on open
+      if (disableOnOpen) {
+        setSendDisabled(false);
+      }
     }
   });
   // Tool call notifications
